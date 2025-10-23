@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آلة حاسبة متطورة - تصميم عصري</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #6C63FF;
+            --secondary: hwb(243 34% 0%);
+            --accent: #FF6584;
+            --dark: #2A2D43;
+            --light: #F7F9FC;
+            --success: #36D1A8;
+            --warning: #FFB74D;
+            --danger: #414040;
+            --gray: #A0A4B8;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: var(--glass);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--light), var(--warning));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .calculator {
+            background: var(--glass);
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .display {
+            background: rgba(42, 45, 67, 0.8);
+            color: white;
+            padding: 25px 20px;
+            text-align: left;
+            direction: ltr;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+        
+        .display::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        
+        .previous-operand {
+            font-size: 1.2rem;
+            color: var(--gray);
+            min-height: 1.5rem;
+            word-wrap: break-word;
+        }
+        
+        .current-operand {
+            font-size: 2.8rem;
+            font-weight: 300;
+            word-wrap: break-word;
+            min-height: 3.5rem;
+            color: var(--light);
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background: rgba(45, 52, 54, 0.2);
+        }
+        
+        button {
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1.4rem;
+            padding: 18px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 16px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* تنسيق مجموعات الأزرار */
+        .number {
+            background: rgba(108, 99, 255, 0.25);
+            font-weight: 500;
+        }
+        
+        .number:hover {
+            background: rgba(108, 99, 255, 0.4);
+        }
+        
+        .operator {
+            background: rgba(255, 101, 132, 0.25);
+            font-weight: 500;
+        }
+        
+        .operator:hover {
+            background: rgba(255, 101, 132, 0.4);
+        }
+        
+        .equals {
+            background: rgba(39, 43, 42, 0.4);
+            font-weight: 600;
+        }
+        
+        .equals:hover {
+            background: rgba(54, 209, 168, 0.6);
+        }
+        
+        .clear, .delete {
+            background: rgba(255, 82, 82, 0.3);
+            font-weight: 500;
+        }
+        
+        .clear:hover, .delete:hover {
+            background: rgba(255, 82, 82, 0.5);
+        }
+        
+        .function {
+            background: rgba(255, 183, 77, 0.25);
+            font-weight: 500;
+        }
+        
+        .function:hover {
+            background: rgba(255, 183, 77, 0.4);
+        }
+        
+        .span-two {
+            grid-column: span 2;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background: var(--glass);
+            border-radius: 15px;
+            width: 100%;
+            backdrop-filter: blur(15px);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .footer p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .signature {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .signature i {
+            color: var(--warning);
+        }
+        
+        .memory-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 15px 20px 0;
+        }
+        
+        .memory-btn {
+            padding: 12px 0;
+            font-size: 1rem;
+            background: rgba(160, 164, 184, 0.2);
+        }
+        
+        .memory-btn:hover {
+            background: rgba(160, 164, 184, 0.4);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .button-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            button {
+                padding: 16px 0;
+                font-size: 1.2rem;
+            }
+            
+            .current-operand {
+                font-size: 2.2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* تأثيرات إضافية */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* تصميم الأزرار بشكل مرتب */
+        .button-grid {
+            grid-template-areas: 
+                "clear clear delete divide"
+                "seven eight nine multiply"
+                "four five six subtract"
+                "one two three add"
+                "zero zero decimal equals";
+        }
+        
+        .clear { grid-area: clear; }
+        .delete { grid-area: delete; }
+        .divide { grid-area: divide; }
+        .seven { grid-area: seven; }
+        .eight { grid-area: eight; }
+        .nine { grid-area: nine; }
+        .multiply { grid-area: multiply; }
+        .four { grid-area: four; }
+        .five { grid-area: five; }
+        .six { grid-area: six; }
+        .subtract { grid-area: subtract; }
+        .one { grid-area: one; }
+        .two { grid-area: two; }
+        .three { grid-area: three; }
+        .add { grid-area: add; }
+        .zero { grid-area: zero; }
+        .decimal { grid-area: decimal; }
+        .equals { grid-area: equals; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-palette"></i>
+    </button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>آلة حاسبة متطورة</h1>
+            <p>أدخل الأرقام واضغط على الأزرار لإجراء العمليات الحسابية</p>
+        </div>
+        
+        <div class="calculator">
+            <div class="display">
+                <div class="previous-operand"></div>
+                <div class="current-operand">0</div>
+            </div>
+            
+            <div class="memory-buttons">
+                <button class="memory-btn function" data-action="memory-clear">MC</button>
+                <button class="memory-btn function" data-action="memory-recall">MR</button>
+                <button class="memory-btn function" data-action="memory-add">M+</button>
+                <button class="memory-btn function" data-action="memory-subtract">M-</button>
+                <button class="memory-btn function" data-action="memory-save">MS</button>
+            </div>
+            
+            <div class="button-grid">
+                <button class="clear span-two">C</button>
+                <button class="delete">⌫</button>
+                <button class="operator">÷</button>
+                
+                <button class="number">7</button>
+                <button class="number">8</button>
+                <button class="number">9</button>
+                <button class="operator">×</button>
+                
+                <button class="number">4</button>
+                <button class="number">5</button>
+                <button class="number">6</button>
+                <button class="operator">-</button>
+                
+                <button class="number">1</button>
+                <button class="number">2</button>
+                <button class="number">3</button>
+                <button class="operator">+</button>
+                
+                <button class="number span-two">0</button>
+                <button class="number">.</button>
+                <button class="equals">=</button>
+            </div>
+            
+            <div class="memory-buttons">
+                <button class="memory-btn function">√</button>
+                <button class="memory-btn function">x²</button>
+                <button class="memory-btn function">%</button>
+                <button class="memory-btn function">±</button>
+                <button class="memory-btn function">1/x</button>
+            </div>
+        </div>
+
+    <script>
+        class Calculator {
+            constructor(previousOperandElement, currentOperandElement) {
+                this.previousOperandElement = previousOperandElement;
+                this.currentOperandElement = currentOperandElement;
+                this.clear();
+                this.memory = 0;
+            }
+            
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+            }
+            
+            delete() {
+                if (this.currentOperand === '0') return;
+                this.currentOperand = this.currentOperand.toString().slice(0, -1);
+                if (this.currentOperand === '') {
+                    this.currentOperand = '0';
+                }
+            }
+            
+            appendNumber(number) {
+                if (number === '.' && this.currentOperand.includes('.')) return;
+                if (this.currentOperand === '0' && number !== '.') {
+                    this.currentOperand = number.toString();
+                } else {
+                    this.currentOperand = this.currentOperand.toString() + number.toString();
+                }
+            }
+            
+            chooseOperation(operation) {
+                if (this.currentOperand === '') return;
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                this.operation = operation;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '0';
+            }
+            
+            compute() {
+                let computation;
+                const prev = parseFloat(this.previousOperand);
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (this.operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '×':
+                        computation = prev * current;
+                        break;
+                    case '÷':
+                        if (current === 0) {
+                            this.showError('لا يمكن القسمة على صفر!');
+                            return;
+                        }
+                        computation = prev / current;
+                        break;
+                    default:
+                        return;
+                }
+                
+                this.currentOperand = computation.toString();
+                this.operation = undefined;
+                this.previousOperand = '';
+            }
+            
+            // وظائف إضافية
+            square() {
+                this.currentOperand = (parseFloat(this.currentOperand) ** 2).toString();
+            }
+            
+            squareRoot() {
+                if (parseFloat(this.currentOperand) < 0) {
+                    this.showError('لا يمكن حساب الجذر التربيعي لعدد سالب!');
+                    return;
+                }
+                this.currentOperand = Math.sqrt(parseFloat(this.currentOperand)).toString();
+            }
+            
+            percentage() {
+                this.currentOperand = (parseFloat(this.currentOperand) / 100).toString();
+            }
+            
+            toggleSign() {
+                this.currentOperand = (parseFloat(this.currentOperand) * -1).toString();
+            }
+            
+            reciprocal() {
+                if (parseFloat(this.currentOperand) === 0) {
+                    this.showError('لا يمكن حساب مقلوب الصفر!');
+                    return;
+                }
+                this.currentOperand = (1 / parseFloat(this.currentOperand)).toString();
+            }
+            
+            // وظائف الذاكرة
+            memoryClear() {
+                this.memory = 0;
+                this.showMessage('تم مسح الذاكرة');
+            }
+            
+            memoryRecall() {
+                this.currentOperand = this.memory.toString();
+            }
+            
+            memoryAdd() {
+                this.memory += parseFloat(this.currentOperand);
+                this.showMessage('تمت الإضافة إلى الذاكرة');
+            }
+            
+            memorySubtract() {
+                this.memory -= parseFloat(this.currentOperand);
+                this.showMessage('تم الطرح من الذاكرة');
+            }
+            
+            memorySave() {
+                this.memory = parseFloat(this.currentOperand);
+                this.showMessage('تم حفظ القيمة في الذاكرة');
+            }
+            
+            showError(message) {
+                const errorElement = document.createElement('div');
+                errorElement.textContent = message;
+                errorElement.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(255, 82, 82, 0.9);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+                `;
+                document.body.appendChild(errorElement);
+                setTimeout(() => {
+                    document.body.removeChild(errorElement);
+                }, 3000);
+            }
+            
+            showMessage(message) {
+                const msgElement = document.createElement('div');
+                msgElement.textContent = message;
+                msgElement.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(54, 209, 168, 0.9);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+                `;
+                document.body.appendChild(msgElement);
+                setTimeout(() => {
+                    document.body.removeChild(msgElement);
+                }, 3000);
+            }
+            
+            getDisplayNumber(number) {
+                const stringNumber = number.toString();
+                const integerDigits = parseFloat(stringNumber.split('.')[0]);
+                const decimalDigits = stringNumber.split('.')[1];
+                let integerDisplay;
+                
+                if (isNaN(integerDigits)) {
+                    integerDisplay = '';
+                } else {
+                    integerDisplay = integerDigits.toLocaleString('en', {
+                        maximumFractionDigits: 0
+                    });
+                }
+                
+                if (decimalDigits != null) {
+                    return `${integerDisplay}.${decimalDigits}`;
+                } else {
+                    return integerDisplay;
+                }
+            }
+            
+            updateDisplay() {
+                this.currentOperandElement.innerText = this.getDisplayNumber(this.currentOperand);
+                if (this.operation != null) {
+                    this.previousOperandElement.innerText = 
+                        `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
+                } else {
+                    this.previousOperandElement.innerText = '';
+                }
+            }
+        }
+        
+        const previousOperandElement = document.querySelector('.previous-operand');
+        const currentOperandElement = document.querySelector('.current-operand');
+        const calculator = new Calculator(previousOperandElement, currentOperandElement);
+        
+        // إضافة تأثير رipple عند النقر
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName.toLowerCase() === 'button') {
+                const btn = e.target;
+                const ripple = document.createElement('span');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                `;
+                ripple.classList.add('ripple');
+                
+                btn.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        });
+        
+        // إضافة الأحداث للأزرار
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.classList.contains('clear')) {
+                    calculator.clear();
+                } else if (button.classList.contains('delete')) {
+                    calculator.delete();
+                } else if (button.classList.contains('operator')) {
+                    calculator.chooseOperation(button.innerText);
+                } else if (button.classList.contains('equals')) {
+                    calculator.compute();
+                } else if (button.classList.contains('number')) {
+                    calculator.appendNumber(button.innerText);
+                } else if (button.classList.contains('function') || button.classList.contains('memory-btn')) {
+                    const action = button.innerText;
+                    switch(action) {
+                        case 'x²':
+                            calculator.square();
+                            break;
+                        case '√':
+                            calculator.squareRoot();
+                            break;
+                        case '%':
+                            calculator.percentage();
+                            break;
+                        case '±':
+                            calculator.toggleSign();
+                            break;
+                        case '1/x':
+                            calculator.reciprocal();
+                            break;
+                        case 'MC':
+                            calculator.memoryClear();
+                            break;
+                        case 'MR':
+                            calculator.memoryRecall();
+                            break;
+                        case 'M+':
+                            calculator.memoryAdd();
+                            break;
+                        case 'M-':
+                            calculator.memorySubtract();
+                            break;
+                        case 'MS':
+                            calculator.memorySave();
+                            break;
+                    }
+                }
+                calculator.updateDisplay();
+            });
+        });
+        
+        // تبديل الثيم
+        const themeToggle = document.getElementById('themeToggle');
+        let themeIndex = 0;
+        const themes = [
+            { primary: '#6C63FF', secondary: '#4A44C6', accent: '#FF6584' },
+            { primary: '#FF6B6B', secondary: '#EE5A52', accent: '#4ECDC4' },
+            { primary: '#45B7D1', secondary: '#3596B5', accent: '#F9C80E' },
+            { primary: '#9C27B0', secondary: '#7B1FA2', accent: '#E91E63' }
+        ];
+        
+        themeToggle.addEventListener('click', () => {
+            themeIndex = (themeIndex + 1) % themes.length;
+            const theme = themes[themeIndex];
+            
+            document.documentElement.style.setProperty('--primary', theme.primary);
+            document.documentElement.style.setProperty('--secondary', theme.secondary);
+            document.documentElement.style.setProperty('--accent', theme.accent);
+            
+            themeToggle.style.transform = 'rotate(90deg)';
+            setTimeout(() => {
+                themeToggle.style.transform = 'rotate(0deg)';
+            }, 300);
+        });
+        
+        // إضافة دعم لوحة المفاتيح
+        document.addEventListener('keydown', event => {
+            if (event.key >= '0' && event.key <= '9' || event.key === '.') {
+                calculator.appendNumber(event.key);
+            } else if (event.key === '+' || event.key === '-' || event.key === '*' || event.key === '/') {
+                let operation;
+                if (event.key === '*') operation = '×';
+                else if (event.key === '/') operation = '÷';
+                else operation = event.key;
+                calculator.chooseOperation(operation);
+            } else if (event.key === 'Enter' || event.key === '=') {
+                calculator.compute();
+            } else if (event.key === 'Backspace') {
+                calculator.delete();
+            } else if (event.key === 'Escape') {
+                calculator.clear();
+            }
+            calculator.updateDisplay();
+        });
+        
+        // إضافة أنماط للرسوم المتحركة
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+</body>
+</html>
+</div>
+        <div class="footer">
+    <div class="banner" style="display: flex;flex-direction: column-reverse; padding: 10px; background-color: #6c63ff;">
+        <a href="https://wa.me/+967775665845" target="_blank" rel="noopener noreferrer"
+            style="color: #04157491; text-decoration: underline; font-weight: bold; cursor: pointer;">
+            💻 مكتب: CodeFi
+        </a>
+        : تم تجهيز الآلة الحاسبة من قبل
+    </div>
+    </div>
