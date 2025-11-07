@@ -15,13 +15,13 @@
         
         :root {
             --primary: #6C63FF;
-            --secondary: hwb(243 34% 0%);
+            --secondary: #4A44C6;
             --accent: #FF6584;
             --dark: #2A2D43;
             --light: #F7F9FC;
             --success: #36D1A8;
             --warning: #FFB74D;
-            --danger: #414040;
+            --danger: #FF5252;
             --gray: #A0A4B8;
             --glass: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
@@ -108,6 +108,7 @@
             color: var(--gray);
             min-height: 1.5rem;
             word-wrap: break-word;
+            text-align: right;
         }
         
         .current-operand {
@@ -116,6 +117,7 @@
             word-wrap: break-word;
             min-height: 3.5rem;
             color: var(--light);
+            text-align: right;
         }
         
         .button-grid {
@@ -189,7 +191,7 @@
         }
         
         .equals {
-            background: rgba(39, 43, 42, 0.4);
+            background: rgba(54, 209, 168, 0.4);
             font-weight: 600;
         }
         
@@ -253,24 +255,33 @@
             backdrop-filter: blur(15px);
             box-shadow: var(--shadow);
             border: 1px solid var(--glass-border);
+            margin-top: 20px;
         }
         
-        .footer p {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-        
-        .signature {
+        .banner {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
+            padding: 15px;
+            background: rgba(108, 99, 255, 0.3);
+            border-radius: 10px;
+            color: white;
         }
         
-        .signature i {
-            color: var(--warning);
+        .banner a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .banner a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
         
         .memory-buttons {
@@ -288,18 +299,6 @@
         
         .memory-btn:hover {
             background: rgba(160, 164, 184, 0.4);
-        }
-        
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .button-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
         }
         
         @media (max-width: 480px) {
@@ -433,6 +432,16 @@
             </div>
         </div>
 
+        <div class="footer">
+            <div class="banner">
+                <span>تم تجهيز الآلة الحاسبة من قبل:</span>
+                <a href="https://computerfaisal7-crypto.github.io/https-w.w.wCodeFi.com/" target="_blank" rel="noopener noreferrer">
+                    💻 مكتب CodeFi
+                </a>
+            </div>
+        </div>
+    </div>
+
     <script>
         class Calculator {
             constructor(previousOperandElement, currentOperandElement) {
@@ -440,24 +449,33 @@
                 this.currentOperandElement = currentOperandElement;
                 this.clear();
                 this.memory = 0;
+                this.waitingForNewOperand = false;
             }
             
             clear() {
                 this.currentOperand = '0';
                 this.previousOperand = '';
                 this.operation = undefined;
+                this.waitingForNewOperand = false;
             }
             
             delete() {
-                if (this.currentOperand === '0') return;
-                this.currentOperand = this.currentOperand.toString().slice(0, -1);
-                if (this.currentOperand === '') {
+                if (this.currentOperand === '0' || this.currentOperand.length === 1) {
                     this.currentOperand = '0';
+                    return;
                 }
+                this.currentOperand = this.currentOperand.toString().slice(0, -1);
             }
             
             appendNumber(number) {
+                if (this.waitingForNewOperand) {
+                    this.currentOperand = number.toString();
+                    this.waitingForNewOperand = false;
+                    return;
+                }
+                
                 if (number === '.' && this.currentOperand.includes('.')) return;
+                
                 if (this.currentOperand === '0' && number !== '.') {
                     this.currentOperand = number.toString();
                 } else {
@@ -467,18 +485,21 @@
             
             chooseOperation(operation) {
                 if (this.currentOperand === '') return;
-                if (this.previousOperand !== '') {
+                
+                if (this.previousOperand !== '' && !this.waitingForNewOperand) {
                     this.compute();
                 }
+                
                 this.operation = operation;
                 this.previousOperand = this.currentOperand;
-                this.currentOperand = '0';
+                this.waitingForNewOperand = true;
             }
             
             compute() {
                 let computation;
                 const prev = parseFloat(this.previousOperand);
                 const current = parseFloat(this.currentOperand);
+                
                 if (isNaN(prev) || isNaN(current)) return;
                 
                 switch (this.operation) {
@@ -505,35 +526,52 @@
                 this.currentOperand = computation.toString();
                 this.operation = undefined;
                 this.previousOperand = '';
+                this.waitingForNewOperand = true;
             }
             
             // وظائف إضافية
             square() {
-                this.currentOperand = (parseFloat(this.currentOperand) ** 2).toString();
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.currentOperand = (current ** 2).toString();
+                this.waitingForNewOperand = true;
             }
             
             squareRoot() {
-                if (parseFloat(this.currentOperand) < 0) {
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                
+                if (current < 0) {
                     this.showError('لا يمكن حساب الجذر التربيعي لعدد سالب!');
                     return;
                 }
-                this.currentOperand = Math.sqrt(parseFloat(this.currentOperand)).toString();
+                this.currentOperand = Math.sqrt(current).toString();
+                this.waitingForNewOperand = true;
             }
             
             percentage() {
-                this.currentOperand = (parseFloat(this.currentOperand) / 100).toString();
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.currentOperand = (current / 100).toString();
+                this.waitingForNewOperand = true;
             }
             
             toggleSign() {
-                this.currentOperand = (parseFloat(this.currentOperand) * -1).toString();
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.currentOperand = (current * -1).toString();
             }
             
             reciprocal() {
-                if (parseFloat(this.currentOperand) === 0) {
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                
+                if (current === 0) {
                     this.showError('لا يمكن حساب مقلوب الصفر!');
                     return;
                 }
-                this.currentOperand = (1 / parseFloat(this.currentOperand)).toString();
+                this.currentOperand = (1 / current).toString();
+                this.waitingForNewOperand = true;
             }
             
             // وظائف الذاكرة
@@ -544,73 +582,72 @@
             
             memoryRecall() {
                 this.currentOperand = this.memory.toString();
+                this.waitingForNewOperand = true;
             }
             
             memoryAdd() {
-                this.memory += parseFloat(this.currentOperand);
-                this.showMessage('تمت الإضافة إلى الذاكرة');
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.memory += current;
+                this.showMessage('تمت الإضافة إلى الذاكرة: ' + this.memory);
             }
             
             memorySubtract() {
-                this.memory -= parseFloat(this.currentOperand);
-                this.showMessage('تم الطرح من الذاكرة');
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.memory -= current;
+                this.showMessage('تم الطرح من الذاكرة: ' + this.memory);
             }
             
             memorySave() {
-                this.memory = parseFloat(this.currentOperand);
-                this.showMessage('تم حفظ القيمة في الذاكرة');
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(current)) return;
+                this.memory = current;
+                this.showMessage('تم حفظ القيمة في الذاكرة: ' + this.memory);
             }
             
             showError(message) {
-                const errorElement = document.createElement('div');
-                errorElement.textContent = message;
-                errorElement.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(255, 82, 82, 0.9);
-                    color: white;
-                    padding: 15px 20px;
-                    border-radius: 10px;
-                    z-index: 1000;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
-                `;
-                document.body.appendChild(errorElement);
-                setTimeout(() => {
-                    document.body.removeChild(errorElement);
-                }, 3000);
+                this.showNotification(message, 'error');
             }
             
             showMessage(message) {
-                const msgElement = document.createElement('div');
-                msgElement.textContent = message;
-                msgElement.style.cssText = `
+                this.showNotification(message, 'success');
+            }
+            
+            showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
                     position: fixed;
                     top: 20px;
                     right: 20px;
-                    background: rgba(54, 209, 168, 0.9);
+                    background: ${type === 'error' ? 'rgba(255, 82, 82, 0.9)' : 'rgba(54, 209, 168, 0.9)'};
                     color: white;
                     padding: 15px 20px;
                     border-radius: 10px;
                     z-index: 1000;
                     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
                     animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 `;
-                document.body.appendChild(msgElement);
+                document.body.appendChild(notification);
                 setTimeout(() => {
-                    document.body.removeChild(msgElement);
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
                 }, 3000);
             }
             
             getDisplayNumber(number) {
+                if (number === undefined || number === '') return '0';
+                
                 const stringNumber = number.toString();
                 const integerDigits = parseFloat(stringNumber.split('.')[0]);
                 const decimalDigits = stringNumber.split('.')[1];
                 let integerDisplay;
                 
                 if (isNaN(integerDigits)) {
-                    integerDisplay = '';
+                    integerDisplay = '0';
                 } else {
                     integerDisplay = integerDigits.toLocaleString('en', {
                         maximumFractionDigits: 0
@@ -626,6 +663,7 @@
             
             updateDisplay() {
                 this.currentOperandElement.innerText = this.getDisplayNumber(this.currentOperand);
+                
                 if (this.operation != null) {
                     this.previousOperandElement.innerText = 
                         `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
@@ -635,6 +673,7 @@
             }
         }
         
+        // تهيئة الآلة الحاسبة
         const previousOperandElement = document.querySelector('.previous-operand');
         const currentOperandElement = document.querySelector('.current-operand');
         const calculator = new Calculator(previousOperandElement, currentOperandElement);
@@ -660,7 +699,9 @@
                 btn.appendChild(ripple);
                 
                 setTimeout(() => {
-                    ripple.remove();
+                    if (btn.contains(ripple)) {
+                        ripple.remove();
+                    }
                 }, 600);
             }
         });
@@ -752,6 +793,7 @@
                 else operation = event.key;
                 calculator.chooseOperation(operation);
             } else if (event.key === 'Enter' || event.key === '=') {
+                event.preventDefault();
                 calculator.compute();
             } else if (event.key === 'Backspace') {
                 calculator.delete();
@@ -776,16 +818,5 @@
         `;
         document.head.appendChild(style);
     </script>
-
 </body>
 </html>
-</div>
-        <div class="footer">
-    <div class="banner" style="display: flex;flex-direction: column-reverse; padding: 10px; background-color: #6c63ff;">
-        <a href="https://wa.me/+967775665845" target="_blank" rel="noopener noreferrer"
-            style="color: #04157491; text-decoration: underline; font-weight: bold; cursor: pointer;">
-            💻 مكتب: CodeFi
-        </a>
-        : تم تجهيز الآلة الحاسبة من قبل
-    </div>
-    </div>
